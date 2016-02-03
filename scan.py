@@ -2,13 +2,8 @@ import os
 import re
 import fileinput
 import string
-import http.client
 
-google="translate.google.cn"
-enCN="/#en/zh-CN/"
 reg=re.compile("[a-z]+")
-
-tapi=http.client.HTTPConnection(google)
 
 def toword(line):
 	L=[]
@@ -26,19 +21,22 @@ def toword(line):
 			w+=line[i]
 	return L
 
-def google_translate(word):
-	tapi.request("GET",enCN+word)
-	response=tapi.getresponse()
-	cnword=""
-	while not response.closed:
-		cnword=cnword+response.read(200)
-	return cnword
-		
-def translate():
+def readText2Word():
+	d={}
 	for line in fileinput.input():
 		for word in toword(line):
-			print word
-			
+			if word in d:
+				d[word]=d[word]+1
+			else:
+				d[word]=1
+	return d
+	
+def writeWord2File(dict):
+	#sort by count of referece
+	count=0
+	for v in sorted(dict,key=lambda s:dict[s]):
+		print count,v,dict[v]
+		count=count+1
+	
 if __name__=="__main__":
-	translate()
-	tapi.close()
+	writeWord2File(readText2Word())
